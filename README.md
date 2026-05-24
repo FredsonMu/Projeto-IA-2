@@ -12,6 +12,54 @@ Ficheiros principais:
 
 Ainda falta juntar a parte do Minimax.
 
+## Como vamos trabalhar no GitHub
+
+A partir de agora nao devemos fazer alteracoes diretamente na branch `main`.
+
+A `main` deve ficar como a versao estavel do projeto. Sempre que alguem for mexer no codigo, nos testes, no Excel ou na documentacao, deve criar uma branch nova.
+
+Fluxo recomendado:
+
+```bash
+git checkout main
+git pull
+git checkout -b nome-da-branch
+```
+
+Depois de fazer as alteracoes:
+
+```bash
+git add .
+git commit -m "Mensagem curta a explicar a alteracao"
+git push -u origin nome-da-branch
+```
+
+No GitHub, abrimos um Pull Request dessa branch para a `main`. Assim o outro elemento do grupo consegue ver o que mudou antes de juntar ao projeto principal.
+
+Exemplos de nomes de branches:
+
+```text
+feature/minimax-ai
+feature/final-results
+feature/experiments
+fix/mcts-valid-moves
+docs/update-readme
+```
+
+Para a parte do Minimax, a branch ideal e:
+
+```text
+feature/minimax-ai
+```
+
+Regra simples:
+
+```text
+main = versao estavel
+branch = trabalho em desenvolvimento
+Pull Request = revisao antes de juntar
+```
+
 ## O que foi feito na minha parte
 
 Foi criada a classe `MCTSAIPlayer`, que herda de `Player` e implementa:
