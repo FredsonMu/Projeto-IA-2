@@ -1,6 +1,4 @@
-# Alpha4 - Estado do Projeto
 
-README temporario para o grupo perceber o que ja esta feito, o que falta fazer e qual e a ideia para apresentar o trabalho.
 
 ## Estado atual
 
