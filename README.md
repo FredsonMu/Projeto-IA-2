@@ -1,74 +1,62 @@
-# Alpha4 - Projeto de IA
+# Alpha4 - Projeto de Inteligencia Artificial
 
-Este projeto implementa agentes de Inteligencia Artificial para jogar Connect 4 / Alpha4.
+Este projeto implementa agentes de Inteligencia Artificial para jogar Alpha4 / Connect 4.
 
-O objetivo e comparar duas abordagens diferentes:
+O objetivo do trabalho e comparar duas formas de tomar decisoes num jogo adversarial:
 
-- Minimax com poda Alpha-Beta;
-- Monte Carlo Tree Search, tambem chamado MCTS.
+- `MinimaxAIPlayer`: procura adversaria com Minimax, poda Alpha-Beta e heuristica.
+- `MCTSAIPlayer`: procura baseada em simulacoes com Monte Carlo Tree Search.
 
-## Estado atual
+O jogo base foi fornecido pela professora. A nossa parte foi criar os agentes automaticos, correr testes e preencher o ficheiro `resultados.xlsx`.
 
-Neste momento ja temos as duas partes principais feitas:
+## Estado atual do projeto
 
-- `MinimaxAIPlayer.py`: agente Minimax com Alpha-Beta, `max_depth` e heuristica.
-- `MCTSAIPlayer.py`: agente MCTS com selecao UCB1, expansao, simulacao e retropropagacao.
-- `run_experiments.py`: script para correr jogos automaticos e gerar `resultados.xlsx`.
-- `play.py`: script para jogar Humano vs IA com interface grafica.
-- `resultados.xlsx`: tabela com os resultados dos testes.
+Ja estao implementadas as duas IAs pedidas:
 
-Tambem existem os ficheiros base do jogo:
+- `MinimaxAIPlayer.py`: parte do Minimax.
+- `MCTSAIPlayer.py`: parte do MCTS.
+- `run_experiments.py`: corre varios jogos automaticamente e gera/atualiza `resultados.xlsx`.
+- `play.py`: permite jogar Humano vs IA com interface grafica.
+- `resultados.xlsx`: tabela de resultados pedida no enunciado.
 
-- `Connect4Board.py`: representa o tabuleiro.
-- `Connect4Game.py`: controla o loop do jogo.
-- `Connect4Gui.py`: interface grafica em Pygame.
+Ficheiros base do jogo:
+
+- `Connect4Board.py`: guarda o estado do tabuleiro.
+- `Connect4Game.py`: controla o ciclo do jogo.
+- `Connect4Gui.py`: desenha a interface grafica com Pygame.
 - `Player.py`: classe base dos jogadores.
 - `HumanPlayer.py`: jogador humano.
 - `RandomPlayer.py`: jogador aleatorio.
 
-## Como estamos a trabalhar
+## Como correr o projeto
 
-Neste momento vamos trabalhar diretamente na branch `main`.
-
-Antes de mexer no codigo, convem fazer:
-
-```bash
-git pull
-```
-
-Depois das alteracoes:
-
-```bash
-git add .
-git commit -m "Mensagem curta sobre a alteracao"
-git push
-```
-
-Assim os dois ficam sempre com a versao mais recente do projeto.
-
-## Como instalar dependencias
-
-Se o projeto nao correr no computador, instalar:
+Instalar dependencias, se for necessario:
 
 ```bash
 py -m pip install numpy pygame openpyxl
 ```
 
-Dependencias usadas:
-
-- `numpy`: tabuleiro.
-- `pygame`: interface grafica.
-- `openpyxl`: criacao e atualizacao do ficheiro Excel.
-
-## Como jogar contra a IA
-
-Para jogar manualmente contra uma IA:
+Jogar contra a IA:
 
 ```bash
 py play.py
 ```
 
-O programa vai pedir para escolher a IA adversaria:
+Correr testes automaticos:
+
+```bash
+py run_experiments.py --games 20 --mcts-iterations 250 --output resultados.xlsx
+```
+
+## Como jogar contra a IA
+
+Ao executar:
+
+```bash
+py play.py
+```
+
+o programa pede para escolher o adversario:
 
 ```text
 (1) Minimax
@@ -79,31 +67,228 @@ Depois abre a janela do jogo.
 
 Funcionamento:
 
-- o humano joga com a peca vermelha;
-- a IA joga com a peca amarela;
-- o humano clica numa coluna para colocar a peca;
-- a peca cai para a posicao livre mais baixa dessa coluna;
-- depois a IA escolhe automaticamente a jogada dela;
-- o jogo continua ate alguem ganhar ou ate o tabuleiro ficar cheio.
+- o humano joga como Jogador 1, com pecas vermelhas;
+- a IA joga como Jogador 2, com pecas amarelas;
+- o humano clica numa coluna para jogar;
+- a peca cai para a posicao vazia mais baixa dessa coluna;
+- depois a IA calcula a sua jogada e joga automaticamente;
+- ganha quem fizer 4 pecas seguidas na horizontal, vertical ou diagonal;
+- se o tabuleiro encher sem vencedor, o resultado e empate.
 
-No fim, o programa pergunta se queremos jogar novamente. Se forem feitos jogos Humano vs IA, o `play.py` tambem tenta guardar esses resultados no `resultados.xlsx`.
+No final, o `play.py` permite jogar novamente e pode acrescentar resultados Humano vs IA ao `resultados.xlsx`.
 
-## Como correr testes automaticos
+## Como o jogo funciona no codigo
 
-Para correr os testes e gerar de novo o Excel:
+O centro do jogo e o objeto `Connect4Board`.
 
-```bash
-py run_experiments.py --games 20 --mcts-iterations 250 --output resultados.xlsx
+Ele guarda:
+
+- numero de linhas;
+- numero de colunas;
+- numero de pecas necessarias para ganhar;
+- grelha do tabuleiro.
+
+Os metodos mais importantes sao:
+
+- `get_valid_moves()`: devolve as colunas onde ainda e possivel jogar.
+- `drop_piece(col, piece)`: coloca uma peca numa coluna.
+- `check_winner(piece)`: verifica se uma certa peca ganhou.
+- `is_board_full()`: verifica se o tabuleiro esta cheio.
+- `copy()`: cria uma copia independente do tabuleiro.
+
+O enunciado dizia que os agentes deviam usar apenas a API permitida do tabuleiro. Por isso, tanto o Minimax como o MCTS usam `board.copy()` para simular jogadas sem estragar o tabuleiro real.
+
+Todos os jogadores seguem a mesma interface:
+
+```python
+get_move(self, board)
 ```
 
-Este script corre:
+Esse metodo recebe o estado atual do tabuleiro e devolve uma coluna valida.
 
-- `Minimax vs Aleatorio`;
-- `MCTS vs Aleatorio`;
-- `Minimax vs MCTS` com 3 combinacoes de parametros;
-- deixa `Humano vs IA` como opcional.
+## Ligacao com a materia das aulas
 
-As 3 combinacoes usadas sao:
+Nas aulas vimos que problemas de procura podem ser representados como estados e acoes.
+
+Neste projeto:
+
+- o estado e o tabuleiro atual;
+- as acoes sao as colunas onde se pode jogar;
+- o objetivo e chegar a um estado vencedor;
+- como existem dois jogadores, o problema e adversarial.
+
+Isto liga diretamente a procura adversaria. O nosso agente nao decide sozinho num mundo parado: ele decide sabendo que o adversario tambem vai tentar ganhar.
+
+## Minimax
+
+O `MinimaxAIPlayer` usa a ideia vista na materia de procura adversaria.
+
+A logica e:
+
+- o jogador MAX tenta maximizar a pontuacao;
+- o jogador MIN tenta minimizar a pontuacao;
+- cada nivel da arvore representa uma jogada futura;
+- o algoritmo alterna entre jogadas nossas e jogadas do adversario.
+
+Como a arvore do Connect 4 pode ficar muito grande, usamos uma profundidade maxima:
+
+```python
+max_depth
+```
+
+Quando o algoritmo chega ao limite da profundidade, ele nao sabe ainda se o jogo vai acabar em vitoria ou derrota. Por isso usa uma heuristica.
+
+## Heuristica do Minimax
+
+A funcao:
+
+```python
+evaluate_board(board, player)
+```
+
+atribui uma pontuacao ao tabuleiro.
+
+A heuristica valoriza:
+
+- vitorias;
+- sequencias de 3 pecas com espaco para completar;
+- sequencias de 2 pecas;
+- pecas no centro do tabuleiro;
+- bloqueio de ameacas do adversario.
+
+Tambem penaliza:
+
+- derrotas;
+- situacoes em que o adversario esta perto de ganhar.
+
+Isto segue a ideia vista nas aulas: quando nao conseguimos procurar ate ao fim, usamos uma funcao de avaliacao para estimar se o estado parece bom ou mau.
+
+## Alpha-Beta
+
+O Minimax tambem usa poda Alpha-Beta.
+
+A poda Alpha-Beta nao muda a decisao final do Minimax. Ela apenas evita explorar ramos que ja sabemos que nao vao melhorar a resposta.
+
+Ideia simples:
+
+- `alpha` guarda a melhor opcao encontrada para MAX;
+- `beta` guarda a melhor opcao encontrada para MIN;
+- se um ramo ja nao pode influenciar a decisao final, o algoritmo corta esse ramo.
+
+Isto torna a procura mais rapida, especialmente quando ha muitas jogadas possiveis.
+
+## MCTS
+
+O `MCTSAIPlayer` usa Monte Carlo Tree Search.
+
+A ideia do MCTS e diferente da do Minimax. Em vez de tentar avaliar manualmente todos os estados, o MCTS faz muitas simulacoes e aprende estatisticamente que jogadas parecem melhores.
+
+Cada iteracao do MCTS tem 4 fases:
+
+1. Selecao.
+2. Expansao.
+3. Simulacao.
+4. Retropropagacao.
+
+O parametro principal e:
+
+```python
+max_iterations
+```
+
+Quanto maior for `max_iterations`, mais simulacoes sao feitas. Isso normalmente melhora a decisao, mas aumenta o tempo de calculo.
+
+## Selecao com UCB1
+
+Na fase de selecao, o MCTS desce na arvore escolhendo nos promissores.
+
+Para isso usa UCB1:
+
+```text
+vitorias / visitas + C * sqrt(log(visitas_do_pai) / visitas)
+```
+
+Esta formula equilibra duas coisas:
+
+- explorar jogadas pouco testadas;
+- aproveitar jogadas que ja tiveram bons resultados.
+
+Isto e importante porque, se o algoritmo so escolhesse a melhor jogada atual, podia ignorar outras jogadas que ainda nao foram testadas o suficiente.
+
+## Expansao
+
+Quando o MCTS chega a um no que ainda tem jogadas possiveis nao testadas, ele cria um novo filho na arvore.
+
+Esse filho representa o tabuleiro depois de uma jogada.
+
+No codigo, isto e feito sempre numa copia:
+
+```python
+new_board = self.board.copy()
+new_board.drop_piece(move, self.next_piece)
+```
+
+Assim a simulacao nao altera o jogo real.
+
+## Simulacao
+
+Depois da expansao, o MCTS joga uma partida aleatoria ate ao fim.
+
+Nesta fase, as jogadas nao sao inteligentes. Sao escolhidas aleatoriamente entre as jogadas validas.
+
+O objetivo nao e jogar perfeitamente numa simulacao isolada. O objetivo e repetir muitas simulacoes para perceber, em media, que jogadas levam a bons resultados.
+
+## Retropropagacao
+
+Quando a simulacao termina, o resultado volta para tras pela arvore.
+
+Cada no visitado aumenta o numero de visitas.
+
+Pontuacao usada:
+
+- vitoria: soma `1.0`;
+- empate: soma `0.5`;
+- derrota: soma `0.0`.
+
+Assim, ao longo de muitas iteracoes, a arvore guarda estatisticas sobre as jogadas.
+
+## Diferenca entre Minimax e MCTS
+
+Resumo simples:
+
+- Minimax: procura futuras jogadas e usa heuristica.
+- MCTS: faz simulacoes aleatorias e usa estatistica.
+- Minimax depende muito de `max_depth`.
+- MCTS depende muito de `max_iterations`.
+
+Frase para defesa:
+
+```text
+O Minimax tenta prever o adversario com uma arvore de procura e uma heuristica. O MCTS estima a qualidade das jogadas fazendo muitas simulacoes e reforcando as jogadas que dao melhores resultados.
+```
+
+## Testes e resultados
+
+O enunciado pede comparar:
+
+- Minimax vs Aleatorio;
+- MCTS vs Aleatorio;
+- Minimax vs MCTS;
+- Humano vs IA e opcional.
+
+O ficheiro `run_experiments.py` corre jogos automaticamente e mede:
+
+- numero de jogos;
+- vitorias do Jogador 1;
+- vitorias do Jogador 2;
+- empates;
+- taxa de vitoria;
+- duracao media;
+- duracao maxima;
+- duracao minima;
+- diferencas observadas.
+
+As combinacoes usadas para Minimax vs MCTS sao:
 
 ```text
 1a combinacao: Minimax max_depth=3 | MCTS max_iterations=25
@@ -111,115 +296,84 @@ As 3 combinacoes usadas sao:
 3a combinacao: Minimax max_depth=5 | MCTS max_iterations=430
 ```
 
-A ideia e comparar os algoritmos com tempos de execucao semelhantes.
+A intencao e aproximar os tempos de decisao dos dois algoritmos para a comparacao ser mais justa.
 
-## Como o jogo funciona
+## Explicacao dos ficheiros criados
 
-O jogo e uma versao do Connect 4.
+`MinimaxAIPlayer.py`
 
-Regras:
+Contem a IA baseada em Minimax. O metodo principal e `get_move`, que testa jogadas possiveis, chama o Minimax e devolve a melhor coluna. Tambem tem a heuristica `evaluate_board`.
 
-- existem 2 jogadores;
-- cada jogador joga uma peca por turno;
-- o jogador escolhe uma coluna;
-- a peca cai ate ao espaco vazio mais baixo dessa coluna;
-- ganha quem conseguir ligar 4 pecas seguidas;
-- as 4 pecas podem estar na horizontal, vertical ou diagonal;
-- se o tabuleiro encher e ninguem ganhar, o jogo termina empatado.
+`MCTSAIPlayer.py`
 
-No codigo, o tabuleiro e gerido pela classe `Connect4Board`.
+Contem a IA baseada em MCTS. Tem a classe `MCTSNode`, que representa nos da arvore, e a classe `MCTSAIPlayer`, que executa as iteracoes e escolhe a melhor jogada.
 
-Metodos principais:
+`run_experiments.py`
 
-- `get_valid_moves()`: devolve as colunas onde ainda se pode jogar.
-- `drop_piece(col, piece)`: coloca uma peca numa coluna.
-- `check_winner(piece)`: verifica se uma peca ganhou.
-- `is_board_full()`: verifica se o tabuleiro esta cheio.
-- `copy()`: cria uma copia do tabuleiro para simulacoes.
+Serve para automatizar testes. Em vez de jogar manualmente muitas vezes, o script cria jogadores, executa varios jogos e escreve os resultados no Excel.
 
-Os agentes recebem o tabuleiro no metodo:
+`play.py`
 
-```python
-get_move(self, board)
-```
+Serve para jogar contra uma IA. Permite escolher Minimax ou MCTS e usa a interface grafica do projeto base.
 
-E devolvem uma coluna valida.
+`resultados.xlsx`
 
-## Como funciona o Minimax
+E a tabela pedida no enunciado. Contem as comparacoes e os resultados obtidos.
 
-O Minimax tenta prever jogadas futuras.
+## Como explicar que entendemos o trabalho
 
-Ele assume que:
+Pontos que devemos saber dizer:
 
-- o nosso jogador tenta escolher a melhor jogada;
-- o adversario tambem tenta escolher a melhor resposta.
+- O tabuleiro real nao deve ser alterado durante simulacoes, por isso usamos `board.copy()`.
+- O Minimax procura jogadas futuras, mas precisa de `max_depth` porque a arvore cresce muito.
+- A heuristica serve para avaliar tabuleiros quando a procura para antes do fim.
+- Alpha-Beta melhora o tempo cortando ramos desnecessarios.
+- O MCTS nao usa uma heuristica forte: usa simulacoes e estatistica.
+- UCB1 equilibra testar jogadas novas e repetir jogadas que ja deram bons resultados.
+- `max_depth` e `max_iterations` controlam o compromisso entre qualidade da jogada e tempo de execucao.
 
-Como calcular todos os futuros ate ao fim seria muito pesado, o Minimax usa:
+## Perguntas provaveis da professora
 
-- `max_depth`: profundidade maxima da procura;
-- Alpha-Beta: corta ramos que nao precisam de ser explorados;
-- heuristica: avalia o tabuleiro quando a procura para.
+Pergunta: Porque e que usamos `board.copy()`?
 
-A heuristica considera:
+Resposta: Porque o tabuleiro recebido no `get_move` e o tabuleiro real do jogo. Se simulassemos diretamente nele, iriamos alterar a partida. A copia permite experimentar jogadas sem mexer no jogo verdadeiro.
 
-- vitorias;
-- derrotas;
-- sequencias de 2 pecas;
-- sequencias de 3 pecas;
-- ameacas do adversario;
-- controlo do centro.
+Pergunta: O que faz o Minimax?
 
-## Como funciona o MCTS
+Resposta: O Minimax simula jogadas futuras assumindo que nos queremos maximizar a pontuacao e o adversario quer minimiza-la.
 
-O MCTS escolhe jogadas atraves de simulacoes.
+Pergunta: Para que serve a heuristica?
 
-Em vez de avaliar manualmente todas as posicoes, ele faz varias experiencias aleatorias e observa que jogadas costumam levar a melhores resultados.
+Resposta: Serve para dar uma pontuacao a um tabuleiro quando nao conseguimos procurar ate ao fim do jogo.
 
-Cada iteracao tem 4 fases:
+Pergunta: O que e Alpha-Beta?
 
-1. Selecao: escolhe um caminho na arvore usando UCB1.
-2. Expansao: cria um novo no para uma jogada ainda nao testada.
-3. Simulacao: joga aleatoriamente ate ao fim.
-4. Retropropagacao: atualiza visitas e resultados nos nos usados.
+Resposta: E uma otimizacao do Minimax que corta ramos que nao precisam de ser analisados porque nao vao alterar a decisao final.
 
-O parametro principal e:
+Pergunta: O que faz o MCTS?
 
-```text
-max_iterations
-```
+Resposta: O MCTS faz muitas simulacoes aleatorias a partir do estado atual e usa os resultados para escolher a jogada mais promissora.
 
-Quanto maior for `max_iterations`, mais simulacoes o MCTS faz. Normalmente joga melhor, mas demora mais tempo.
+Pergunta: O que e UCB1?
 
-O MCTS usa sempre `board.copy()` nas simulacoes, para nao alterar o tabuleiro real do jogo.
+Resposta: E a formula usada na selecao do MCTS para equilibrar exploracao e aproveitamento.
 
-## Diferenca principal entre Minimax e MCTS
+Pergunta: Qual e a principal diferenca entre Minimax e MCTS?
 
-Frase curta para explicar na defesa:
+Resposta: O Minimax usa procura e heuristica. O MCTS usa simulacoes e estatistica.
 
-```text
-O Minimax decide atraves de procura e heuristica; o MCTS decide atraves de simulacoes. No fim, comparamos os dois pela taxa de vitorias e pelo tempo medio de jogo.
-```
+## Checklist antes da entrega
 
-Resumo:
+Antes de criar o ZIP final:
 
-- Minimax: procura jogadas futuras e usa heuristica.
-- MCTS: faz muitas simulacoes aleatorias e usa estatistica.
-- Minimax depende mais de `max_depth`.
-- MCTS depende mais de `max_iterations`.
+- correr `py run_experiments.py`;
+- confirmar que `resultados.xlsx` esta atualizado;
+- testar `py play.py`;
+- confirmar que `MinimaxAIPlayer.py` e `MCTSAIPlayer.py` estao no projeto;
+- remover ficheiros que nao sao necessarios;
+- criar o ZIP com o nome pedido pela professora.
 
-## O que ainda falta verificar
-
-Antes da entrega final:
-
-- confirmar se `resultados.xlsx` esta atualizado;
-- confirmar se o ZIP nao leva `.venv`, `.idea`, `__pycache__`, `docs`, `Doc Principal` nem `.git`;
-- decidir se o ficheiro `Projeto2 - alpha4.pdf` deve sair do ZIP final, porque e o enunciado e nao codigo;
-- correr pelo menos uma vez `py run_experiments.py`;
-- testar `py play.py` para confirmar que a interface abre.
-
-## Ficheiros que nao sao necessarios no ZIP final
-
-Evitar colocar:
+Nao colocar no ZIP:
 
 - `.venv/`;
 - `.idea/`;
