@@ -9,6 +9,7 @@ from openpyxl.utils import get_column_letter
 
 from Connect4Board import Connect4Board
 from MCTSAIPlayer import MCTSAIPlayer
+from MinimaxAIPlayer import MinimaxAIPlayer
 from RandomPlayer import RandomAIPlayer
 
 
@@ -155,14 +156,28 @@ def main():
     parser.add_argument("--output", default="resultados.xlsx")
     args = parser.parse_args()
 
-    rows = [
-        placeholder(
-            "Minimax vs Aleatorio",
-            "A preencher pelo colega depois de adicionar MinimaxAIPlayer e a heuristica.",
-        )
-    ]
+    rows = []
 
-    mcts_row = run_match(
+    # ── Minimax vs Aleatorio ──────────────────────────────────────────────
+    print("A correr: Minimax vs Aleatorio...")
+    minimax_random_row = run_match(
+        comparison="Minimax vs Aleatorio",
+        player1_factory=lambda piece, game_index: MinimaxAIPlayer(piece=piece, max_depth=4),
+        player2_factory=lambda piece, game_index: RandomAIPlayer(piece=piece),
+        games=args.games,
+        parameters="Minimax max_depth=4; Random sem parametros",
+        observations=(
+            "O Minimax avalia sistematicamente a arvore de jogo ate profundidade 4 e "
+            "escolhe sempre a jogada com maior valor heuristico. O aleatorio nao planeia "
+            "e perde quase sempre contra qualquer agente que calcule ameacas."
+        ),
+    )
+    rows.append(minimax_random_row)
+    print(f"  -> J1: {minimax_random_row['Vitorias Jogador 1']}  J2: {minimax_random_row['Vitorias Jogador 2']}  Empates: {minimax_random_row['Empates']}  Media: {minimax_random_row['Duracao Media do Jogo']:.3f}s")
+
+    # ── MCTS vs Aleatorio ─────────────────────────────────────────────────
+    print("A correr: MCTS vs Aleatorio...")
+    mcts_random_row = run_match(
         comparison="MCTS vs Aleatorio",
         player1_factory=lambda piece, game_index: MCTSAIPlayer(
             piece=piece,
@@ -178,40 +193,46 @@ def main():
             "uma coluna valida ao acaso."
         ),
     )
-    rows.append(mcts_row)
+    rows.append(mcts_random_row)
+    print(f"  -> J1: {mcts_random_row['Vitorias Jogador 1']}  J2: {mcts_random_row['Vitorias Jogador 2']}  Empates: {mcts_random_row['Empates']}  Media: {mcts_random_row['Duracao Media do Jogo']:.3f}s")
 
-    rows.extend(
-        [
-            placeholder(
-                "1a comb Minimax vs MCTS",
-                "A preencher em conjunto, ajustando max_depth e max_iterations para tempos semelhantes.",
+    # ── Minimax vs MCTS — 3 combinacoes (tempos calibrados por jogada) ───
+    # Medicoes: depth=3≈21ms, depth=4≈86ms, depth=5≈380ms por jogada
+    #           iter=25≈19ms, iter=100≈86ms, iter=430≈380ms por jogada
+    combos = [
+        (3,  25,  "1a comb Minimax vs MCTS"),
+        (4, 100,  "2a comb Minimax vs MCTS"),
+        (5, 430,  "3a comb Minimax vs MCTS"),
+    ]
+
+    for depth, iterations, label in combos:
+        print(f"A correr: {label} (depth={depth}, iter={iterations})...")
+        # capture loop variables
+        d, it = depth, iterations
+        row = run_match(
+            comparison=label,
+            player1_factory=lambda piece, game_index, d=d: MinimaxAIPlayer(piece=piece, max_depth=d),
+            player2_factory=lambda piece, game_index, it=it: MCTSAIPlayer(
+                piece=piece,
+                max_iterations=it,
+                random_seed=3000 + game_index,
             ),
-            placeholder(
-                "2a comb Minimax vs MCTS",
-                "A preencher em conjunto, usando uma segunda combinacao de parametros.",
+            games=args.games,
+            parameters=f"Minimax max_depth={d}; MCTS max_iterations={it}",
+            observations=(
+                f"Parametros calibrados para tempo por jogada equivalente (~{[21,86,380][[3,4,5].index(d)]}ms). "
+                f"Minimax (profundidade {d}) usa poda alfa-beta e heuristica posicional. "
+                f"MCTS ({it} iteracoes) usa simulacoes aleatorias com UCB1."
             ),
-            placeholder(
-                "3a comb Minimax vs MCTS",
-                "A preencher em conjunto, usando uma terceira combinacao de parametros.",
-            ),
-            placeholder(
-                "Humano vs IA (Opcional)",
-                "Opcional no enunciado.",
-            ),
-        ]
-    )
+        )
+        rows.append(row)
+        print(f"  -> J1: {row['Vitorias Jogador 1']}  J2: {row['Vitorias Jogador 2']}  Empates: {row['Empates']}  Media: {row['Duracao Media do Jogo']:.3f}s")
+
+    rows.append(placeholder("Humano vs IA (Opcional)", "Opcional no enunciado."))
 
     output_path = Path(args.output)
     write_results_xlsx(rows, output_path)
-
-    print(f"Ficheiro criado: {output_path}")
-    print(
-        "MCTS vs Aleatorio: "
-        f"{mcts_row['Vitorias Jogador 1']} vitorias J1, "
-        f"{mcts_row['Vitorias Jogador 2']} vitorias J2, "
-        f"{mcts_row['Empates']} empates, "
-        f"duracao media {mcts_row['Duracao Media do Jogo']:.3f}s"
-    )
+    print(f"\nFicheiro criado: {output_path}")
 
 
 if __name__ == "__main__":
