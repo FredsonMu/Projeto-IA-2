@@ -5,12 +5,14 @@ import pygame
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 
+import Connect4Gui as connect4_gui
 from Connect4Game import Connect4Game
 from HumanPlayer import HumanPlayer
 from MCTSAIPlayer import MCTSAIPlayer
 from MinimaxAIPlayer import MinimaxAIPlayer
 
 XLSX_PATH = Path("resultados.xlsx")
+UI_SQUARESIZE = 80
 
 COLUMNS = [
     "Comparacao", "Parametros usados", "No de Jogos",
@@ -19,6 +21,11 @@ COLUMNS = [
     "Duracao Media do Jogo", "Duracao Maxima", "Duracao Minima",
     "Diferencas de Comportamento Observadas",
 ]
+
+
+def _configure_window_size():
+    connect4_gui.SQUARESIZE = UI_SQUARESIZE
+    connect4_gui.RADIUS = UI_SQUARESIZE // 2 - 5
 
 
 # ── Verbose wrappers ──────────────────────────────────────────────────────────
@@ -122,7 +129,9 @@ def _escolher_ia():
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    print("\n  *** Connect 4 — Humano vs IA ***")
+    _configure_window_size()
+
+    print("\n  *** Connect 4 - Humano vs IA ***")
     print("  Humano = Vermelho  (Jogador 1)")
     print("  IA     = Amarelo   (Jogador 2)")
     print("  Clica numa coluna para jogar.\n")

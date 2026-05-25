@@ -65,6 +65,8 @@ o programa pede para escolher o adversario:
 
 Depois abre a janela do jogo.
 
+A janela usada no `play.py` foi reduzida para caber melhor no ecra. No jogo base cada quadrado tinha 100 pixels; no `play.py` usamos 80 pixels, ficando uma janela com cerca de `560x640`.
+
 Funcionamento:
 
 - o humano joga como Jogador 1, com pecas vermelhas;
